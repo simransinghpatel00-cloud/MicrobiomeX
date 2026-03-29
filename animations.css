@@ -1,0 +1,28 @@
+/* ─────────────────────────────────────────
+   css/animations.css  —  All keyframes
+───────────────────────────────────────── */
+
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to   { opacity: 1; transform: translateY(0);     }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes barGrow {
+  from { width: 0; }
+  /* "to" inherits the inline width set on the element */
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1;   }
+  50%       { opacity: 0.4; }
+}
+
+@keyframes spin {
+  from { transform: rotate(-90deg); }
+  to   { transform: rotate(270deg); }
+}

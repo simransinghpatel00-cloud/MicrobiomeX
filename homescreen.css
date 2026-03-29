@@ -1,0 +1,253 @@
+/* ─────────────────────────────────────────
+   css/homescreen.css  —  iOS Home Screen
+───────────────────────────────────────── */
+
+/* ── Base ── */
+.homescreen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #090918 0%, #0d0d20 50%, #060610 100%);
+  display: flex;
+  flex-direction: column;
+  padding-top: 58px;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.homescreen.hidden {
+  opacity: 0;
+  transform: scale(1.05);
+  pointer-events: none;
+}
+
+/* ── Wallpaper orbs ── */
+.wallpaper {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.wp-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.25;
+}
+
+.orb-1 { width:300px; height:300px; background:#7f5af0; top:-60px;   left:-60px;  }
+.orb-2 { width:250px; height:250px; background:#00e5be; bottom:80px;  right:-60px; }
+.orb-3 { width:200px; height:200px; background:#f72585; bottom:200px; left:30px;   }
+
+/* ── Date Widget ── */
+.date-widget {
+  text-align: center;
+  padding: 30px 0 20px;
+  z-index: 2;
+  animation: fadeDown 0.6s ease both;
+}
+
+.date-widget .day {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.date-widget .date-num {
+  font-size: 72px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+  letter-spacing: -3px;
+  margin: 4px 0;
+}
+
+.date-widget .month {
+  font-size: 14px;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* ── App Grid ── */
+.app-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 10px 20px;
+  z-index: 2;
+  flex: 1;
+}
+
+/* ── Generic App Icon ── */
+.app-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  animation: fadeUp 0.5s ease both;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Stagger grid children */
+.app-icon:nth-child(1) { animation-delay: 0.05s; }
+.app-icon:nth-child(2) { animation-delay: 0.10s; }
+.app-icon:nth-child(3) { animation-delay: 0.15s; }
+.app-icon:nth-child(4) { animation-delay: 0.20s; }
+.app-icon:nth-child(6) { animation-delay: 0.30s; }
+.app-icon:nth-child(7) { animation-delay: 0.35s; }
+.app-icon:nth-child(8) { animation-delay: 0.40s; }
+
+.icon-wrap {
+  width: 68px;
+  height: 68px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  transition: transform 0.15s, box-shadow 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Glass sheen */
+.icon-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.icon-wrap:active { transform: scale(0.88); }
+
+.app-label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.85);
+  text-align: center;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  line-height: 1.2;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+}
+
+/* Icon colour themes */
+.icon-health .icon-wrap  { background: linear-gradient(135deg, #ff6b6b, #ee0979); }
+.icon-lab    .icon-wrap  { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+.icon-dna    .icon-wrap  { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+.icon-map    .icon-wrap  { background: linear-gradient(135deg, #fa709a, #fee140); }
+.icon-data   .icon-wrap  { background: linear-gradient(135deg, #a18cd1, #fbc2eb); }
+.icon-camera .icon-wrap  { background: linear-gradient(135deg, #2d3436, #636e72); }
+.icon-settings .icon-wrap { background: linear-gradient(135deg, #636e72, #2d3436); }
+
+/* ── MicrobiomeX Featured Card ── */
+.mbx-featured {
+  grid-column: 2 / 4;                     /* spans 2 columns */
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 24px;
+  padding: 14px;
+  animation-delay: 0.5s !important;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.mbx-featured:active { background: rgba(255,255,255,0.08); }
+
+.mbx-icon-wrap {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #00e5be 0%, #7f5af0 50%, #f72585 100%);
+  box-shadow: 0 6px 30px rgba(0,229,190,0.35), 0 0 0 1px rgba(255,255,255,0.1);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.mbx-emoji { font-size: 32px; position: relative; z-index: 2; }
+
+.notif-dot {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 18px;
+  height: 18px;
+  background: #f72585;
+  border-radius: 50%;
+  border: 2px solid #0a0a12;
+  font-size: 9px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-family: 'DM Mono', monospace;
+  z-index: 3;
+}
+
+.mbx-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.3px;
+}
+
+.mbx-hint {
+  font-size: 11px;
+  color: var(--accent);
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+/* ── Swipe Hint ── */
+.swipe-hint {
+  position: absolute;
+  bottom: 105px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: 600;
+  animation: pulse 2s infinite;
+  white-space: nowrap;
+  z-index: 3;
+}
+
+/* ── Dock ── */
+.dock {
+  margin: 0 16px 30px;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 30px;
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 2;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+.dock-icon { animation: none !important; }
+
+.dock-wrap {
+  width: 56px;
+  height: 56px;
+}
+
+.mbx-dock {
+  background: linear-gradient(135deg, #00e5be, #7f5af0, #f72585);
+}
