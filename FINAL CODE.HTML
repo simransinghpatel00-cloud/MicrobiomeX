@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MicrobiomeX</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/app.css" />
+    <style>
+      /* Settings modal/panel - minimal, nonintrusive */
+      #settingsOverlay {
+        position: fixed;
+        z-index: 998;
+        left: 0;
+        top: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(20, 20, 20, 0.3);
+        display: none;
+        align-items: center;
+        justify-content: center;
+      }
+      #settingsPanel {
+        background: #fff;
+        color: #191724;
+        border-radius: 18px;
+        min-width: 270px;
+        max-width: 90vw;
+        padding: 25px 22px 20px 22px;
+        box-shadow: 0 4px 40px rgba(0,0,0,0.14);
+        position: relative;
+        font-family: inherit;
+        font-size: 1.04em;
+      }
+      #settingsPanel h2 {
+        font-size: 1.24em;
+        margin: 0 0 12px 0;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+        display: flex;
+        align-items: center;
+        gap: 0.3em;
+      }
+      #settingsPanel .settings-row {
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+      }
+      #settingsPanel label {
+        font-size: 1em;
+        font-weight: 500;
+      }
+      #settingsPanel .settings-toggle {
+        width: 44px;
+        height: 24px;
+        background: #e2e8f0;
+        border-radius: 12px;
+        position: relative;
+        cursor: pointer;
+        transition: background .18s;
+      }
+      #settingsPanel .settings-toggle.on {
+        background: #7f5af0;
+      }
+      #settingsPanel .settings-toggle-knob {
+        width: 20px; height: 20px;
+        background: #fff;
+        border-radius: 50%;
+        position: absolute;
+        top: 2px; left: 2px;
+        transition: left .18s;
+        box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+      }
+      #settingsPanel .settings-toggle.on .settings-toggle-knob {
+        left: 22px;
+        background: #f7f7fb;
+      }
+      #settingsPanel .settings-btn {
+        background: #f15151;
+        border: none;
+        color: #fff;
+        padding: 7px 14px;
+        border-radius: 7px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 1em;
+        margin-left: 0;
+        transition: background .16s;
+      }
+      #settingsPanel .settings-btn:hover {
+        background: #cc3333;
+      }
+      #settingsPanel .settings-info {
+        font-size: 1em;
+        color: #42424a;
+      }
+      #settingsPanel .close-settings-btn {
+        position: absolute;
+        right: 10px; top: 12px;
+        background: none;
+        border: none;
+        color: #bbb;
+        font-size: 1.5em;
+        cursor: pointer;
+      }
+      body.dark-mode #settingsPanel {
+        background: #191824;
+        color: #fff;
+      }
+      body.dark-mode #settingsPanel .settings-info {
+        color: #cfcde7;
+      }
+      /* Floating Quick AI Boost Button */
+      #aiQuickActionBtn {
+        position: fixed;
+        bottom: 32px;
+        right: 32px;
+        z-index: 1100;
+        background: linear-gradient(90deg, #00e5be, #7f5af0 85%);
+        color: #fff;
+        font-size: 1.6em;
+        font-weight: bold;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.16);
+        border: none;
+        border-radius: 50px;
+        padding: 0.72em 1.38em 0.72em 1.19em;
+        display: flex;
+        align-items: center;
+        gap: 0.7em;
+        cursor: pointer;
+        transition: box-shadow .19s;
+        letter-spacing: -0.01em;
+      }
+      #aiQuickActionBtn:hover {
+        box-shadow: 0 6px 30px rgba(127,90,240,0.23);
+      }
+      #aiQuickActionPanel {
+        position: fixed;
+        bottom: 110px;
+        right: 32px;
+        z-index: 1101;
+        background: #fff;
+        color: #232234;
+        border-radius: 16px;
+        box-shadow: 0 6px 26px rgba(127,90,240,0.17);
+        padding: 18px 16px 14px 16px;
+        display: none;
+        flex-direction: column;
+        gap: 13px;
+        min-width: 200px;
+        animation: fadeInAiPanel .23s;
+      }
+      @keyframes fadeInAiPanel {
+        0% { opacity: 0; transform: translateY(18px);}
+        100% { opacity: 1; transform: translateY(0);}
+      }
+      .quick-ai-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.8em;
+        background: #7f5af0;
+        color: #fff;
+        padding: 8px 15px;
+        border-radius: 8px;
+        border: none;
+        font-size: 1.05em;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(127,90,240,0.06);
+        transition: background .16s;
+      }
+      .quick-ai-btn.ai2 {background: #00e5be;}
+      .quick-ai-btn.ai3 {background: #ffbe63; color: #232234;}
+      .quick-ai-btn:active { filter: brightness(.96);}
+      .quick-ai-btn:focus {outline: 2px solid #7f5af0;}
+      @media(max-width:570px){
+        #aiQuickActionBtn { right: 12px; bottom: 15px;}
+        #aiQuickActionPanel { right: 12px; min-width: 170px;}
+      }
+      /* Daily Gut Tip Banner */
+      .gut-tip-banner {
+        display: flex;
+        align-items: center;
+        gap: 0.8em;
+        background: linear-gradient(90deg, #fff2b8 30%, #d7fef5 100%);
+        color: #383620;
+        border-radius: 11px;
+        font-size: 1em;
+        font-weight: 600;
+        margin-bottom: 12px;
+        margin-top: 4px;
+        padding: 9px 15px 8px 13px;
+        box-shadow: 0 1px 5px rgba(243,220,132,0.11);
+        position: relative;
+      }
+      .gut-tip-banner .tip-ico {
+        font-size: 1.25em;
+      }
+      .ai-personality-line {
+        font-size: 1.05em;
+        color: #785af8;
+        font-style: italic;
+        margin-bottom: 0.85em;
+        font-weight: 600;
+        letter-spacing: -0.003em;
+        padding-left: 2px;
+        display: flex; align-items: center; gap: 7px;
+      }
+      /* Settings Gear Icon - top right */
+      .mini-gear-btn {
+        position: absolute;
+        top: 13px; 
+        right: 13px;
+        z-index: 1010;
+        background: rgba(249,248,253,0.86);
+        border-radius: 50%;
+        border: none;
+        padding: 4.2px 6.2px 3.8px 6.2px;
+        font-size: 1.2em;
+        filter: drop-shadow(0 1px 5px rgba(90,90,128,0.18));
+        cursor: pointer;
+        color: #7f5af0;
+        transition: background .18s;
+      }
+      .mini-gear-btn:hover {
+        background: #f4f2fb;
+      }
+      @media(max-width:450px){
+        .mini-gear-btn { right: 7px; top: 7px;}
+      }
+      /* Scan tab enhancement - Quick Analyze btn + chips */
+      #scanQuickAnalyzeBar {
+        display: flex;
+        gap: 8px;
+        margin: 16px 0 11px 0;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .scan-quick-btn {
+        background: #00e5be;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 5px 13px 5px 10px;
+        font-size: 1em;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex; align-items: center; gap: 7px;
+        transition: background .12s;
+      }
+      .scan-quick-btn.suggestion-chip {
+        background: #eef3ff;
+        color: #7f5af0;
+        font-weight: 500;
+        padding: 6px 13px 6px 10px;
+      }
+      .scan-quick-btn:active { filter:brightness(.95);}
+    </style>
+  </head>
+  <body>
+    <!-- Floating AI Quick Action Button & Panel -->
+    <button id="aiQuickActionBtn" style="display:none;">
+      ⚡
+      <span style="font-size:1em;font-weight:700;letter-spacing:0.01em;">AI Boost</span>
+    </button>
+    <div id="aiQuickActionPanel" style="display:none;">
+      <button class="quick-ai-btn ai1" onclick="window._aiQuickAction && _aiQuickAction('improve')">🧠 Improve my gut today</button>
+      <button class="quick-ai-btn ai2" onclick="window._aiQuickAction && _aiQuickAction('eatnow')">🍽️ What should I eat now?</button>
+      <button class="quick-ai-btn ai3" onclick="window._aiQuickAction && _aiQuickAction('avoid')">⚠️ What should I avoid today?</button>
+    </div>
+    <!-- Settings Gear (mini, fixed top right on shell) -->
+    <button class="mini-gear-btn" id="miniGearSettings" title="App settings" aria-label="App settings" style="display:none;">⚙️</button>
+    <div class="phone-frame">
+      <div class="phone-screen">
+        <div class="dynamic-island">
+          <div class="dynamic-island__sensor"></div>
+          <div class="dynamic-island__camera"></div>
+        </div>
+
+        <div class="status-bar">
+          <div id="clock" style="font-family: var(--font-mono)">9:41</div>
+          <div class="status-bar__icons">
+            <span>▲</span><span>WiFi</span>
+            <div class="battery"><div class="battery__fill"></div></div>
+          </div>
+        </div>
+
+        <div class="app-shell" style="position:relative">
+          <!-- ONBOARDING -->
+          <div class="onboarding-flow" id="onboarding">
+            <!-- ... leave unchanged onboarding steps ... -->
+            <!-- (no changes required for onboarding) -->
+            <!-- STEP 1 -->
+            <div class="onboarding-step is-active" id="step1">
+              <div class="onboarding-progress">
+                <div class="onboarding-progress__dot is-done"></div>
+                <div class="onboarding-progress__dot"></div>
+                <div class="onboarding-progress__dot"></div>
+              </div>
+              <div class="onboarding-emoji">🦠</div>
+              <div class="onboarding-title">Build your<br />Gut Profile</div>
+              <div class="onboarding-subtitle">
+                Answer 3 quick steps to get your personalized microbiome score, diet plan &amp; AI insights.
+              </div>
+              <div class="form-group">
+                <label class="form-label">Your Name</label>
+                <input class="form-input" type="text" id="ob-name" placeholder="e.g. Shivam" />
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Age</label>
+                  <input class="form-input" type="number" id="ob-age" placeholder="e.g. 25" min="10" max="100" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Weight (kg)</label>
+                  <input class="form-input" type="number" id="ob-weight" placeholder="e.g. 70" min="30" max="200" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Biological Sex</label>
+                <select class="form-input" id="ob-sex">
+                  <option value="">Select...</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Prefer not to say</option>
+                </select>
+              </div>
+              <div class="onboarding-footer">
+                <button class="primary-cta" type="button" data-onboarding-action="step-2">Continue →</button>
+              </div>
+            </div>
+            <!-- STEP 2 and STEP 3 as before, unchanged... -->
+            <div class="onboarding-step" id="step2">
+              <div class="onboarding-progress">
+                <div class="onboarding-progress__dot is-done"></div>
+                <div class="onboarding-progress__dot is-done"></div>
+                <div class="onboarding-progress__dot"></div>
+              </div>
+              <div class="onboarding-emoji">🥗</div>
+              <div class="onboarding-title">Diet &amp;<br />Health Issues</div>
+              <div class="onboarding-subtitle">This helps us accurately predict your gut bacteria composition.</div>
+              <div class="form-group">
+                <label class="form-label">Primary Diet Type</label>
+                <div class="choice-chips" id="dietChips">
+                  <div class="choice-chip" data-value="omnivore">🍗 Omnivore</div>
+                  <div class="choice-chip" data-value="vegetarian">🥦 Vegetarian</div>
+                  <div class="choice-chip" data-value="vegan">🌱 Vegan</div>
+                  <div class="choice-chip" data-value="keto">🥩 Keto</div>
+                  <div class="choice-chip" data-value="junk">🍔 High Junk</div>
+                  <div class="choice-chip" data-value="mediterranean">🫒 Mediterranean</div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Health Issues (select all that apply)</label>
+                <div class="choice-chips" id="issueChips">
+                  <div class="choice-chip" data-value="bloating">😮‍💨 Bloating</div>
+                  <div class="choice-chip" data-value="acne">😖 Acne</div>
+                  <div class="choice-chip" data-value="fatigue">😴 Fatigue</div>
+                  <div class="choice-chip" data-value="constipation">😣 Constipation</div>
+                  <div class="choice-chip" data-value="ibs">🫄 IBS</div>
+                  <div class="choice-chip" data-value="anxiety">😰 Anxiety</div>
+                  <div class="choice-chip" data-value="reflux">🔥 Acid Reflux</div>
+                  <div class="choice-chip" data-value="none">✅ None</div>
+                </div>
+              </div>
+              <div class="onboarding-footer">
+                <button class="primary-cta" type="button" data-onboarding-action="step-3">Continue →</button>
+              </div>
+            </div>
+            <div class="onboarding-step" id="step3">
+              <div class="onboarding-progress">
+                <div class="onboarding-progress__dot is-done"></div>
+                <div class="onboarding-progress__dot is-done"></div>
+                <div class="onboarding-progress__dot is-done"></div>
+              </div>
+              <div class="onboarding-emoji">🏃</div>
+              <div class="onboarding-title">Lifestyle<br />Habits</div>
+              <div class="onboarding-subtitle">Sleep, stress &amp; exercise deeply shape gut microbiome diversity.</div>
+              <div class="form-group">
+                <label class="form-label">Sleep per Night: <span id="sleepValue">7</span>h</label>
+                <input type="range" class="range-input" id="ob-sleep" min="4" max="10" value="7" />
+                <div class="range-labels"><span>4h</span><span>7h (ideal)</span><span>10h</span></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Exercise Frequency</label>
+                <div class="choice-chips" id="exChips">
+                  <div class="choice-chip" data-value="none">🛋️ None</div>
+                  <div class="choice-chip" data-value="low">🚶 1–2×/wk</div>
+                  <div class="choice-chip" data-value="medium">🏃 3–4×/wk</div>
+                  <div class="choice-chip" data-value="high">🏋️ 5+/wk</div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Water Intake: <span id="waterValue">6</span> glasses/day</label>
+                <input type="range" class="range-input" id="ob-water" min="1" max="12" value="6" />
+                <div class="range-labels"><span>1</span><span>6</span><span>12+</span></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Stress Level</label>
+                <div class="choice-chips" id="stressChips">
+                  <div class="choice-chip" data-value="low">😌 Low</div>
+                  <div class="choice-chip" data-value="medium">😐 Medium</div>
+                  <div class="choice-chip" data-value="high">😤 High</div>
+                </div>
+              </div>
+              <div class="onboarding-footer">
+                <button class="primary-cta" type="button" data-onboarding-action="finish">Generate My Profile 🔬</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- MAIN APP -->
+          <div class="app-root" id="mainApp" style="display: none; position:relative;">
+            <!-- Mini Settings Gear top right (absolutely positioned) -->
+            <!-- SHOWN ONLY IF LOGGED IN; handled in JS -->
+            <!-- GUT DAILY TIP BANNER (inserted dynamically here in JS) -->
+            <div class="app-header">
+              <div class="app-header__left">
+                <div class="app-header__logo">🦠</div>
+                <div class="app-header__title">
+                  <h1>MicrobiomeX</h1>
+                  <p>GUT HEALTH ANALYTICS</p>
+                </div>
+              </div>
+              <div class="user-badge" id="userChip">—</div>
+              <!-- (classic settings button left as fallback, can hide in JS as not needed)-->
+              <button id="openSettingsBtn" title="Settings" style="background: none; border: none; font-size: 1.3em; margin-left: 10px; cursor:pointer; color: #888; vertical-align: middle; display:none;" aria-label="Settings">⚙️</button>
+            </div>
+            <!-- AI PERSONALITY LINE (doctor-like, dynamic) -->
+            <div id="aiPersonalityLine" class="ai-personality-line" style="display:none;"><span>🧠</span><span>Analyzing microbiome profile...</span></div>
+            <!-- DAILY GUT TIP BANNER -->
+            <div id="dailyGutTip" style="display:none"></div>
+            <div class="tab-scroll" id="tabBody">
+              <!-- HOME -->
+              <div class="tab-panel is-active" id="tab-home">
+                <div class="score-card">
+                  <div class="score-card__label">Microbiome Score</div>
+                  <div class="score-card__main">
+                    <div class="score-card__value" id="scoreValue">—</div>
+                    <div class="score-card__max">/100</div>
+                    <div class="score-badge score-badge--fair" id="scoreBadge">—</div>
+                  </div>
+                  <div class="score-card__description" id="scoreDescription">Analyzing gut profile...</div>
+                  <div class="score-progress"><div class="score-progress__bar" id="scoreProgressBar" style="width: 0%"></div></div>
+                </div>
+                <div class="diversity-card">
+                  <div class="donut-wrap">
+                    <svg width="94" height="94" viewBox="0 0 100 100">
+                      <defs>
+                        <linearGradient id="dg" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stop-color="#00e5be" />
+                          <stop offset="100%" stop-color="#7f5af0" />
+                        </linearGradient>
+                      </defs>
+                      <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="10" />
+                      <circle
+                        id="diversityDonut"
+                        cx="50"
+                        cy="50"
+                        r="38"
+                        fill="none"
+                        stroke="url(#dg)"
+                        stroke-width="10"
+                        stroke-dasharray="239"
+                        stroke-dashoffset="239"
+                        stroke-linecap="round"
+                        transform="rotate(-90 50 50)"
+                        style="transition: stroke-dashoffset 1.6s ease"
+                      />
+                    </svg>
+                    <div class="donut-center">
+                      <div class="donut-center__value" id="diversityPercent">0%</div>
+                      <div class="donut-center__label">Diversity</div>
+                    </div>
+                  </div>
+                  <div class="diversity-info">
+                    <h3>Species Richness</h3>
+                    <p id="speciesEstimate">Calculating species...</p>
+                    <div class="tag-row">
+                      <span class="tag-pill tag-pill--teal">Firmicutes</span>
+                      <span class="tag-pill tag-pill--purple">Bacteroidetes</span>
+                      <span class="tag-pill tag-pill--pink">Actino.</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="section-title">Top Microbes</div>
+                <div class="microbe-list" id="microbeList"></div>
+                <div class="section-title">AI Insights</div>
+                <div class="insights-list" id="homeInsights"></div>
+                <div class="spacer"></div>
+              </div>
+
+              <!-- DIET -->
+              <div class="tab-panel" id="tab-diet">
+                <div class="diet-banner">
+                  Personalized for <strong id="dietName">you</strong> based on your gut profile &amp; <strong id="dietType">your diet</strong>.
+                </div>
+                <div class="diet-section">
+                  <div class="diet-section__header">
+                    <span class="diet-section__icon">✅</span>
+                    <div>
+                      <div class="diet-section__title">Eat More</div>
+                      <div class="diet-section__subtitle">Great for your gut bacteria</div>
+                    </div>
+                  </div>
+                  <div class="food-grid" id="eatFoods"></div>
+                </div>
+                <div class="diet-section">
+                  <div class="diet-section__header">
+                    <span class="diet-section__icon">❌</span>
+                    <div>
+                      <div class="diet-section__title">Avoid</div>
+                      <div class="diet-section__subtitle">Harmful to your microbiome</div>
+                    </div>
+                  </div>
+                  <div class="food-grid" id="avoidFoods"></div>
+                </div>
+                <div class="diet-section">
+                  <div class="diet-section__header">
+                    <span class="diet-section__icon">⚠️</span>
+                    <div>
+                      <div class="diet-section__title">Moderate</div>
+                      <div class="diet-section__subtitle">Okay occasionally</div>
+                    </div>
+                  </div>
+                  <div class="food-grid" id="moderateFoods"></div>
+                </div>
+                <div class="spacer"></div>
+              </div>
+
+              <!-- SCAN -->
+              <div class="tab-panel" id="tab-scan">
+                <div class="scan-area">
+                  <span class="scan-area__icon">🍽️</span>
+                  <div class="scan-area__title">AI Food Scanner</div>
+                  <div class="scan-area__hint">Type any food — AI analyzes it against YOUR specific gut microbiome profile</div>
+                </div>
+                <!-- Smart "Quick Analyze" with example suggestions -->
+                <div id="scanQuickAnalyzeBar">
+                  <button class="scan-quick-btn" id="scanQuickAnalyzeBtn">⚡ Quick Analyze</button>
+                  <!-- dynamic suggestion chips inserted here -->
+                </div>
+                <div>
+                  <input class="scan-input" type="text" id="foodInput" placeholder="e.g. yogurt, pizza, banana..." />
+                  <button class="scan-cta" type="button" id="scanButton">🔍 Analyze for My Gut</button>
+                </div>
+                <div class="scan-result" id="scanResult">
+                  <div class="scan-result__header">
+                    <span class="scan-result__food-name" id="scanFoodName"></span>
+                    <span class="verdict-pill" id="scanVerdict"></span>
+                  </div>
+                  <div class="scan-result__analysis" id="scanAnalysis"></div>
+                </div>
+                <div class="section-title">Recent Scans</div>
+                <div id="recentScans" style="display: flex; flex-direction: column; gap: 7px; margin-bottom: 6px"></div>
+                <div class="spacer"></div>
+              </div>
+
+              <!-- TRACK -->
+              <div class="tab-panel" id="tab-track">
+                <div class="track-date" id="trackDate">TODAY</div>
+                <div class="track-section">
+                  <div class="track-label">What did you eat today?</div>
+                  <textarea class="form-input" id="mealsInput" placeholder="e.g. oatmeal for breakfast, salad at lunch..." rows="3"></textarea>
+                </div>
+                <div class="track-section">
+                  <div class="track-label">Digestion Status</div>
+                  <div class="digestion-grid">
+                    <button class="digestion-button" type="button" data-value="Great 😄">Great 😄</button>
+                    <button class="digestion-button" type="button" data-value="Normal 😐">Normal 😐</button>
+                    <button class="digestion-button" type="button" data-value="Bloated 😮‍💨">Bloated 😮‍💨</button>
+                    <button class="digestion-button" type="button" data-value="Gassy 💨">Gassy 💨</button>
+                    <button class="digestion-button" type="button" data-value="Constip. 😣">Constip. 😣</button>
+                    <button class="digestion-button" type="button" data-value="Crampy 🫄">Crampy 🫄</button>
+                  </div>
+                </div>
+                <div class="track-section">
+                  <div class="track-label">Mood Today</div>
+                  <div class="mood-grid">
+                    <button class="mood-button" type="button" data-value="😄"><div>😄</div><div class="mood-button__label">Great</div></button>
+                    <button class="mood-button" type="button" data-value="🙂"><div>🙂</div><div class="mood-button__label">Good</div></button>
+                    <button class="mood-button" type="button" data-value="😐"><div>😐</div><div class="mood-button__label">Meh</div></button>
+                    <button class="mood-button" type="button" data-value="😔"><div>😔</div><div class="mood-button__label">Low</div></button>
+                  </div>
+                </div>
+                <div class="track-section">
+                  <div class="track-label">Water Intake — tap to fill</div>
+                  <div class="water-row" id="waterRow"></div>
+                </div>
+                <button class="save-log-button" type="button" id="saveLogButton">💾 Save Today's Log</button>
+                <div class="section-title">Recent Logs</div>
+                <div class="log-history" id="logHistory"></div>
+                <div class="spacer"></div>
+              </div>
+
+              <!-- AI CHAT -->
+              <div class="tab-panel" id="tab-ai">
+                <div class="chat-intro">
+                  <div class="chat-intro__icon">🧠</div>
+                  <div class="chat-intro__title">Gut AI Assistant</div>
+                  <div class="chat-intro__subtitle" id="chatSubtitle">Ask me anything about your gut health, foods, or symptoms.</div>
+                </div>
+                <div class="suggestion-list" id="chatSuggestions">
+                  <!-- Dynamic/Smart Suggestions inserted here -->
+                </div>
+                <div class="chat-thread" id="chatThread"></div>
+                <div class="chat-input-row">
+                  <input class="chat-input" type="text" id="chatInput" placeholder="Ask about your gut..." />
+                  <button class="chat-send" type="button" id="sendChatButton">↑</button>
+                </div>
+                <div class="spacer"></div>
+              </div>
+              <!-- PROGRESS -->
+              <div class="tab-panel" id="tab-prog">
+                <div class="improvement-card">
+                  <div class="improvement-card__value" id="progressPercent">+0%</div>
+                  <div class="improvement-card__label">Projected weekly gut improvement</div>
+                </div>
+                <div class="section-title">This Week</div>
+                <div class="week-row" id="weekRow"></div>
+                <div class="stat-grid" id="statGrid"></div>
+                <div class="section-title">Milestones</div>
+                <div class="milestone-list" id="milestones"></div>
+                <div class="spacer"></div>
+              </div>
+            </div>
+            <div class="bottom-nav">
+              <div class="bottom-nav__item is-active" data-tab="home"><div class="ico">🏠</div><span>Home</span></div>
+              <div class="bottom-nav__item" data-tab="diet"><div class="ico">🥗</div><span>Diet</span></div>
+              <div class="bottom-nav__item" data-tab="scan"><div class="ico">📷</div><span>Scan</span></div>
+              <div class="bottom-nav__item" data-tab="track"><div class="ico">📅</div><span>Track</span></div>
+              <div class="bottom-nav__item" data-tab="ai"><div class="ico">🧠</div><span>AI</span></div>
+              <div class="bottom-nav__item" data-tab="prog"><div class="ico">📈</div><span>Progress</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="home-indicator"></div>
+
+        <!-- Overlay/Modal for Settings Panel -->
+        <div id="settingsOverlay" style="display:none;">
+          <div id="settingsPanel">
+            <button class="close-settings-btn" id="closeSettingsBtn" aria-label="Close">&times;</button>
+            <h2><span>⚙️</span> Settings</h2>
+            <div class="settings-row">
+              <label for="darkModeToggle">Dark Mode</label>
+              <div id="darkModeToggle" class="settings-toggle"><div class="settings-toggle-knob"></div></div>
+            </div>
+            <div class="settings-row">
+              <label>Clear Data</label>
+              <button class="settings-btn" id="resetDataBtn">Clear Data</button>
+            </div>
+            <div class="settings-info">
+              <span>MicrobiomeX v1.0</span><br>
+              <span>Made with ❤️ for gut health</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <script src="../js/app.js"></script>
+    <script>
+      /***** MINI SETTINGS GEAR *****/
+      document.addEventListener("DOMContentLoaded",function(){
+        // Show mini-gear when app loaded
+        const showSettings = () => {
+          document.getElementById('miniGearSettings').style.display = "";
+        };
+        showSettings();
+        // Click open mini settings
+        document.getElementById("miniGearSettings").onclick = function() {
+          document.getElementById("settingsOverlay").style.display="flex";
+        };
+        document.getElementById('closeSettingsBtn').onclick = () => {
+          document.getElementById("settingsOverlay").style.display="none";
+        };
+        // Make overlay close on click outside
+        document.getElementById('settingsOverlay').onclick = e => {
+          if(e.target===e.currentTarget) document.getElementById("settingsOverlay").style.display="none";
+        };
+        // Sync dark mode state
+        let dark = window.localStorage.getItem('dark-mode')==='1';
+        const setDarkMode=(on)=>{
+          document.body.classList.toggle('dark-mode',!!on);
+        };
+        setDarkMode(dark);
+        const tgl=document.getElementById('darkModeToggle');
+        const updateToggle=()=>{
+          if(document.body.classList.contains('dark-mode')){tgl.classList.add('on');}else{tgl.classList.remove('on');}
+        };
+        updateToggle();
+        tgl.onclick=function(){
+          dark=!dark;window.localStorage.setItem('dark-mode',dark?'1':'0');
+          setDarkMode(dark); updateToggle();
+        }
+        // Clear Data Button
+        document.getElementById('resetDataBtn').onclick=function(){
+          if(confirm('Clear all your profile & gut data?')){
+            window.localStorage.clear();
+            location.reload();
+          }
+        };
+      });
+
+      /***** FLOATING AI QUICK ACTION BUTTON & PANEL *****/
+      document.addEventListener("DOMContentLoaded",function(){
+        // Only show after onboarding complete
+        let btn = document.getElementById('aiQuickActionBtn');
+        let panel = document.getElementById('aiQuickActionPanel');
+        setTimeout(() => { btn.style.display='flex'; }, 850);
+        let open=false;
+        btn.onclick=function(){
+          open=!open;
+          if(open){panel.style.display='flex';}
+          else {panel.style.display='none';}
+        };
+        // Click outside closes panel
+        document.addEventListener('click',function(evt){
+          if(!btn.contains(evt.target) && !panel.contains(evt.target)){
+            open=false; panel.style.display='none';
+          }
+        });
+        // Helper function for demo action
+        window._aiQuickAction=function(which){
+          panel.style.display='none';open=false;
+          // Trigger smart behavior; here, show in chat or insights
+          if(which==='improve'){
+            // Go to home & highlight tips
+            document.querySelector('[data-tab="home"]').click();
+            setTimeout(function(){
+              let insight=document.getElementById('homeInsights');
+              if(insight) insight.innerHTML='<div class="insight-card"><span>🧠</span> Try adding a high-fiber food to boost your score today!</div>';
+            }, 350)
+          }
+          if(which==='eatnow'){
+            document.querySelector('[data-tab="diet"]').click();
+            setTimeout(function(){
+              let eg=document.getElementById('eatFoods');
+              if(eg) eg.scrollIntoView({behavior:"smooth"});
+            },300);
+          }
+          if(which==='avoid'){
+            document.querySelector('[data-tab="diet"]').click();
+            setTimeout(function(){
+              let ag=document.getElementById('avoidFoods');
+              if(ag) ag.scrollIntoView({behavior:"smooth"});
+            },300);
+          }
+        }
+      });
+
+      /***** DAILY GUT TIP BANNER *****/
+      document.addEventListener("DOMContentLoaded",function(){
+        const dailyTips = [
+          "Your gut thrives on fiber. Aim for 25–30g daily—try oats or bananas today.",
+          "Fermented foods like yogurt and kimchi boost your microbiome.",
+          "Drink at least 6–8 glasses of water for optimal digestion.",
+          "Diverse veggies = diverse gut bacteria. Try something new this week.",
+          "7–8 hours of sleep helps your gut produce healthy signals.",
+          "Cutting down on stress improves your digestion and gut flora.",
+          "Moderate exercise keeps gut bacteria happy.",
+          "Reduce processed sugars—they hurt helpful gut bacteria.",
+          "Coffee and green tea can support some healthy gut microbes.",
+          "Adding beans or lentils is great for your gut diversity.",
+        ];
+        let tip = dailyTips[Math.floor(Math.random()*dailyTips.length)];
+        let div = document.getElementById('dailyGutTip');
+        div.innerHTML =
+          '<div class="gut-tip-banner"><span class="tip-ico">💡</span><div>'+tip+'</div></div>';
+        div.style.display='';
+      });
+
+      /***** AI PERSONALITY LINE *****/
+      document.addEventListener("DOMContentLoaded",function(){
+        let pLine = document.getElementById("aiPersonalityLine");
+        // Dummy check of user profile: in real app, base on profile
+        let issues = (window.localStorage.getItem('gut-issues')||'').toLowerCase();
+        let sleep = Number(window.localStorage.getItem('gut-sleep')||'7');
+        let stress = (window.localStorage.getItem('gut-stress')||'low');
+        let diversity = Number(window.localStorage.getItem('gut-diversity')||60);
+        let msg = "Your gut AI is analyzing your microbiome profile…";
+        if(issues.includes('bloating')) msg='Low diversity pattern detected: focus on fiber.';
+        else if(issues.includes('fatigue')) msg='Gut–energy link: watch for blood sugar swings.';
+        else if(stress==='high') msg='High stress pattern detected in gut signals.';
+        else if(sleep<6) msg='Low sleep can reduce gut diversity—try 7–8h tonight.';
+        else if(diversity>80) msg='Excellent microbiome diversity detected!';
+        pLine.style.display='flex'; pLine.children[1].innerText=msg;
+      });
+
+      /***** SMART GUT SCORE (formula: sleep, stress, diet, water) *****/
+      document.addEventListener("DOMContentLoaded",function(){
+        let sleep = Number(window.localStorage.getItem('gut-sleep')||'7');
+        let stress = (window.localStorage.getItem('gut-stress')||'low');
+        let water = Number(window.localStorage.getItem('gut-water')||'6');
+        let diet = (window.localStorage.getItem('gut-diet')||'junk');
+        let scoreBase = 65;
+        // Simple adjustments
+        if(sleep >= 7) scoreBase += 9;
+        else if(sleep < 6) scoreBase -= 7;
+        if(stress === 'high') scoreBase -= 10;
+        else if(stress === 'medium') scoreBase -= 4;
+        if(water >= 6) scoreBase += 5;
+        else if(water <= 3) scoreBase -= 5;
+        if(diet==='vegan'||diet==='mediterranean') scoreBase += 8;
+        else if(diet==='omnivore'||diet==='vegetarian') scoreBase += 2;
+        else if(diet==='junk') scoreBase -= 10;
+        let score = Math.min(99,Math.max(32,scoreBase));
+        // Animate in UI
+        let v = document.getElementById('scoreValue');
+        let badge = document.getElementById('scoreBadge');
+        let desc = document.getElementById('scoreDescription');
+        let bar = document.getElementById('scoreProgressBar');
+        let diversityBar = document.getElementById('diversityDonut');
+        let percent = document.getElementById('diversityPercent');
+        setTimeout(function(){
+          if(v){v.innerText=score;}
+          if(badge){
+            badge.innerText = 
+              score>80? "Excellent":
+              score>70? "Good":
+              score>60? "Fair":"Low";
+            badge.className = "score-badge " + (
+              score>80? "score-badge--exc":
+              score>70? "score-badge--good":
+              score>60? "score-badge--fair":"score-badge--low"
+            );
+          }
+          if(desc){
+            desc.innerText = 
+              score>80? "Impressive healthy microbiome detected.":
+              score>70? "Above average gut health, keep it up!":
+              score>60? "Fair gut health. Some improvements needed.":
+              "Low gut score, focus on sleep, fiber, water!";
+          }
+          if(bar){
+            bar.style.width = (score) + "%";
+          }
+          // Diversity ring (simulate link to score)
+          if(diversityBar&&percent){
+            let perc = Math.floor(score/1.08);
+            percent.innerText = perc+"%";
+            diversityBar.style.strokeDashoffset = 239-239*(perc/100);
+          }
+        },900);
+      });
+
+      /***** SMART CHAT SUGGESTIONS *****/
+      document.addEventListener("DOMContentLoaded",function(){
+        let sugBox = document.getElementById('chatSuggestions');
+        sugBox.innerHTML='';
+        // Read gut issues from localStorage (array of strings, for demo)
+        let issues = (window.localStorage.getItem('gut-issues')||'').toLowerCase();
+        let suggestions = [];
+        if(issues.includes('bloating')){
+          suggestions = [
+            "💬 Why am I bloated?",
+            "💬 Foods to reduce bloating",
+            "💬 Gut–brain link to bloating?",
+            "💬 Probiotics for bloating?",
+          ];
+        } else if(issues.includes('fatigue')){
+          suggestions = [
+            "💬 Why am I tired after eating?",
+            "💬 Gut and energy link?",
+            "💬 Can diet improve fatigue?",
+            "💬 Is coffee bad for my gut?",
+          ];
+        } else if(issues.includes('constipation')){
+          suggestions = [
+            "💬 How to relieve constipation?",
+            "💬 Gut foods for constipation?",
+            "💬 Is fiber always the answer?",
+            "💬 Water and gut movement?",
+          ];
+        } else {
+          suggestions = [
+            "💬 Best probiotic foods for my gut?",
+            "💬 How can I improve my gut score?",
+            "💬 Should I eat yogurt daily?",
+            "💬 What foods lower inflammation?",
+          ];
+        }
+        suggestions.forEach(function(s){
+          let chip = document.createElement('div');
+          chip.className='suggestion-chip';
+          chip.innerText=s;
+          chip.onclick=function() {
+            document.getElementById('chatInput').value=
+              s.replace(/^💬\s*/,'');
+            document.getElementById('chatInput').focus();
+          }
+          sugBox.appendChild(chip);
+        });
+      });
+
+      /***** SMART FOOD QUICK SCAN IN SCAN TAB *****/
+      document.addEventListener("DOMContentLoaded",function(){
+        let bar = document.getElementById('scanQuickAnalyzeBar');
+        let inp = document.getElementById('foodInput');
+        let sugData = [];
+        let diet = (window.localStorage.getItem('gut-diet')||'omnivore');
+        // Suggest foods by diet (simple)
+        if(diet=='vegan') sugData=["banana","lentils","tofu"];
+        else if(diet=='vegetarian') sugData=["yogurt","banana","oats"];
+        else if(diet=='keto') sugData=["eggs","avocado","coffee"];
+        else if(diet=='junk') sugData=["pizza","burger","french fries"];
+        else if(diet=='mediterranean') sugData=["olive oil","hummus","fish"];
+        else sugData=["yogurt","banana","coffee"];
+        // Place chips
+        var n = document.getElementById('scanQuickAnalyzeBtn');
+        sugData.forEach(food=>{
+          let c = document.createElement('button');
+          c.className="scan-quick-btn suggestion-chip";
+          c.innerText=food;
+          c.onclick=function(){
+            inp.value=food;  inp.focus();
+          };
+          bar.appendChild(c);
+        });
+        // Quick Analyze puts top food & auto triggers result
+        n.onclick = function(){
+          inp.value = sugData[0]||'banana';
+          document.getElementById('scanButton').click();
+        };
+      });
+    </script>
+  </body>
+</html>
